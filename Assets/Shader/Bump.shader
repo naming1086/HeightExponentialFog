@@ -16,7 +16,7 @@
             #pragma vertex vert
             #pragma fragment frag
             #pragma shader_feature _FOG_ON
-
+            #include "FogCommon.cginc"
             #include "UnityCG.cginc"
             #include "Header.cginc"
             struct appdata
@@ -37,6 +37,7 @@
                 float3 tangentWS : TEXCOORD3;
                 float3 bitangentWS : TEXCOORD4;
                 float4 screenPos : TEXCOORD5;
+                My_FOG_COORDS(6)
             };
 
             sampler2D _MainTex;
@@ -54,6 +55,8 @@
                 o.tangentWS= UnityObjectToWorldDir(v.tangent);
                 o.normalWS = UnityObjectToWorldDir(v.normal);
                 o.screenPos = ComputeScreenPos(o.vertex);
+
+                My_TRANSFER_FOG(o, v.vertex);
                 return o;
             }
 
@@ -69,9 +72,12 @@
                 
                 
                 half4 col = tex2D(_MainTex, i.uv);
-            #ifdef _FOG_ON
-                col.xyz = ExponentialHeightFog(col.xyz, i.posWorld);
-            #endif
+                My_APPLY_FOG(i, col);
+                
+
+             //#ifdef _FOG_ON
+             //    col.xyz = ExponentialHeightFog(col.xyz, i.posWorld);
+             //#endif
                 return half4(col.xyz,1);
             }
             ENDCG
